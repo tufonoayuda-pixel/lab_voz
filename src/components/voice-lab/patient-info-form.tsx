@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"; // Import Card components
 
 export const PatientInfoForm: React.FC = () => {
   const [patientName, setPatientName] = useState("");
