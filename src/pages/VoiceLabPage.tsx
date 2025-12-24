@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react"; // Añadido React aquí
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -11,8 +11,8 @@ import { es } from "date-fns/locale";
 import { PitchVisualizer } from "@/components/voice-lab/pitch-visualizer";
 import { cn } from "@/lib/utils";
 import { PatientInfoForm } from "@/components/voice-lab/patient-info-form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"; // Import RadioGroup components
-import { Label } from "@/components/ui/label"; // Import Label component
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
@@ -66,9 +66,9 @@ export default function VoiceLabPage() {
   // Stopwatch state
   const [stopwatchTime, setStopwatchTime] = useState(0);
   const [isStopwatchRunning, setIsStopwatchRunning] = useState(false);
-  const [recordedTimes, setRecordedTimes] = useState<RecordedTime[]>([]); // Updated to store objects
+  const [recordedTimes, setRecordedTimes] = useState<RecordedTime[]>([]);
   const stopwatchIntervalRef = useRef<NodeJS.Timeout>();
-  const [measurementType, setMeasurementType] = useState<MeasurementType>("TMF"); // New state for measurement type
+  const [measurementType, setMeasurementType] = useState<MeasurementType>("TMF");
 
   // Hydration fix
   const [isClient, setIsClient] = useState(false);
@@ -233,7 +233,7 @@ export default function VoiceLabPage() {
 
   const handleRecordTime = () => {
     const time = formatTime(stopwatchTime);
-    setRecordedTimes((prev) => [...prev, { time, type: measurementType }]); // Store time and type
+    setRecordedTimes((prev) => [...prev, { time, type: measurementType }]);
     toast({ title: "Tiempo Guardado", description: `Se ha registrado el tiempo: ${time} (${measurementType})` });
   };
 
@@ -370,7 +370,7 @@ export default function VoiceLabPage() {
               <h4 className="font-medium text-sm">Tiempos Guardados:</h4>
               <ul className="list-disc list-inside text-sm text-muted-foreground">
                 {recordedTimes.map((item, index) => (
-                  <li key={index}>{item.time} ({item.type})</li> {/* Display time and type */}
+                  <li key={index}>{item.time} ({item.type})</li>
                 ))}
               </ul>
               <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => setRecordedTimes([])}>
