@@ -4,20 +4,16 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Loader2, Mic, MicOff, Pause, Play, RotateCcw, Save, User } from "lucide-react";
+import { AlertCircle, Loader2, Mic, MicOff, Pause, Play, RotateCcw } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { patients } from "@/lib/mock-data";
-import type { SavedSession } from "@/lib/types";
-import { Label } from "@/components/ui/label";
-import { PitchVisualizer } from "@/components/voice-lab/pitch-visualizer"; // Import the new visualizer
-import { cn } from "@/lib/utils"; // Import cn for conditional classes
+import { PitchVisualizer } from "@/components/voice-lab/pitch-visualizer";
+import { cn } from "@/lib/utils";
+import { PatientInfoForm } from "@/components/voice-lab/patient-info-form"; // Import the new form
 
 const noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
-// MODIFIED: noteFromPitch to include cents
 const noteFromPitch = (frequency: number): { note: string; octave: number; noteIndex: number; cents: number } => {
   const A4 = 440; // A4 frequency
   const A4_MIDI = 69; // A4 MIDI note number
@@ -42,7 +38,6 @@ export default function VoiceLabPage() {
   const { toast } = useToast();
   const [hasMicPermission, setHasMicPermission] = useState(true);
   const [isListening, setIsListening] = useState(false);
-  // MODIFIED: pitch state to include cents
   const [pitch, setPitch] = useState({ hz: 0, note: "...", octave: 0, noteIndex: -1, cents: 0 });
 
   // Vocal Metrics State
@@ -51,7 +46,7 @@ export default function VoiceLabPage() {
   const [avgPitch, setAvgPitch] = useState<number>(0);
   const allPitchesRef = useRef<number[]>([]);
 
-  // NEW: Pitch history state for the visualizer
+  // Pitch history state for the visualizer
   const [pitchHistory, setPitchHistory] = useState<{ cents: number; noteIndex: number }[]>([]);
 
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -64,9 +59,6 @@ export default function VoiceLabPage() {
   const [isStopwatchRunning, setIsStopwatchRunning] = useState(false);
   const [recordedTimes, setRecordedTimes] = useState<string[]>([]);
   const stopwatchIntervalRef = useRef<NodeJS.Timeout>();
-
-  const [selectedPatientId, setSelectedPatientId] = useState<string>("");
-  const [isSaving, setIsSaving] = useState(false);
 
   // Hydration fix
   const [isClient, setIsClient] = useState(false);
@@ -84,7 +76,7 @@ export default function VoiceLabPage() {
     if (isStopwatchRunning) {
       setIsStopwatchRunning(false);
     }
-    setPitchHistory([]); // NEW: Reset pitch history
+    setPitchHistory([]);
     toast({ title: "Métricas Reiniciadas", description: "Puede comenzar un nuevo análisis." });
   };
 
@@ -127,9 +119,8 @@ export default function VoiceLabPage() {
 
     if (rms < 0.01) {
       // not enough signal
-      // MODIFIED: set cents to 0 when no signal
       setPitch({ hz: 0, note: "...", octave: 0, noteIndex: -1, cents: 0 });
-      setPitchHistory((prev) => [...prev, { cents: 0, noteIndex: -1 }]); // Add to history
+      setPitchHistory((prev) => [...prev, { cents: 0, noteIndex: -1 }]);
     } else {
       const r = new Float32Array(bufferLength);
       for (let i = 0; i < bufferLength; i++) {
@@ -152,15 +143,13 @@ export default function VoiceLabPage() {
 
       if (freq > 80 && freq < 1000) {
         // Reasonable human voice range
-        // MODIFIED: get cents from noteFromPitch
         const { note, octave, noteIndex, cents } = noteFromPitch(freq);
         setPitch({ hz: freq, note, octave, noteIndex, cents });
         updateVocalMetrics(freq, note, octave);
-        setPitchHistory((prev) => [...prev, { cents, noteIndex }]); // Add to history
+        setPitchHistory((prev) => [...prev, { cents, noteIndex }]);
       } else {
-        // MODIFIED: set cents to 0 when out of range
         setPitch({ hz: 0, note: "...", octave: 0, noteIndex: -1, cents: 0 });
-        setPitchHistory((prev) => [...prev, { cents: 0, noteIndex: -1 }]); // Add to history
+        setPitchHistory((prev) => [...prev, { cents: 0, noteIndex: -1 }]);
       }
     }
 
@@ -205,7 +194,6 @@ export default function VoiceLabPage() {
       audioContextRef.current.close();
     }
     setIsListening(false);
-    // MODIFIED: Reset pitch and history when stopping
     setPitch({ hz: 0, note: "...", octave: 0, noteIndex: -1, cents: 0 });
     setPitchHistory([]);
   }, []);
@@ -239,40 +227,6 @@ export default function VoiceLabPage() {
     toast({ title: "Tiempo Guardado", description: `Se ha registrado el tiempo: ${time}` });
   };
 
-  const handleSaveSession = async () => {
-    if (!selectedPatientId) {
-      toast({ title: "Error", description: "Por favor, seleccione un paciente.", variant: "destructive" });
-      return;
-    }
-    setIsSaving(true);
-    const newSession: SavedSession = {
-      id: `session-${Date.now()}`,
-      date: format(new Date(), "PPP", { locale: es }),
-      time: format(new Date(), "p", { locale: es }),
-      minPitch,
-      maxPitch,
-      avgPitch,
-      recordedTimes,
-    };
-
-    try {
-      // Simulate saving to database
-      setTimeout(() => {
-        toast({
-          title: "Sesión Guardada",
-          description: `Los resultados han sido guardados en la ficha del paciente.`,
-        });
-        resetMetrics();
-        setSelectedPatientId("");
-        setIsSaving(false);
-      }, 1500);
-    } catch (error) {
-      console.error("Error saving lab session:", error);
-      toast({ title: "Error", description: "No se pudo guardar la sesión de laboratorio.", variant: "destructive" });
-      setIsSaving(false);
-    }
-  };
-
   if (!isClient) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -300,6 +254,9 @@ export default function VoiceLabPage() {
           </AlertDescription>
         </Alert>
       )}
+
+      {/* Patient Information Form */}
+      <PatientInfoForm />
 
       <div className="text-center p-4 rounded-lg border bg-card space-y-4" data-tour-id="laboratorio-main">
         {/* Current Pitch Display */}
@@ -377,7 +334,8 @@ export default function VoiceLabPage() {
                 <RotateCcw className="h-4 w-4" />
               </Button>
               <Button onClick={handleRecordTime} variant="outline" size="icon">
-                <Save className="h-4 w-4" />
+                {/* Removed Save icon as it's not saving to a session */}
+                Guardar Tiempo
               </Button>
             </div>
           </CardContent>
@@ -396,38 +354,6 @@ export default function VoiceLabPage() {
           )}
         </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Guardar Sesión de Laboratorio</CardTitle>
-          <CardDescription>Guarde los resultados de la sesión actual y asígnelos a un paciente.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="max-w-xs">
-            <Label htmlFor="patient-select" className="flex items-center gap-2">
-              <User className="h-4 w-4" /> Asignar a Paciente
-            </Label>
-            <Select value={selectedPatientId} onValueChange={setSelectedPatientId}>
-              <SelectTrigger id="patient-select">
-                <SelectValue placeholder="Seleccionar paciente" />
-              </SelectTrigger>
-              <SelectContent>
-                {patients.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button onClick={handleSaveSession} size="lg" disabled={isListening || !selectedPatientId || isSaving}>
-            {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-            Guardar Sesión en Ficha
-          </Button>
-        </CardFooter>
-      </Card>
     </div>
   );
 }
