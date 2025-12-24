@@ -49,7 +49,7 @@ export default function VoiceLabPage() {
   const [isListening, setIsListening] = useState(false);
   const [pitch, setPitch] = useState({ hz: 0, note: "...", octave: 0, noteIndex: -1, cents: 0 });
 
-  // Vocal Metrics State
+  // Vocal Metrics State - Updated to include noteIndex
   const [minPitch, setMinPitch] = useState<{ hz: number; note: string; octave: number; noteIndex: number } | null>(null);
   const [maxPitch, setMaxPitch] = useState<{ hz: number; note: string; octave: number; noteIndex: number } | null>(null);
   const [avgPitch, setAvgPitch] = useState<number>(0);
@@ -90,6 +90,7 @@ export default function VoiceLabPage() {
     toast({ title: "Métricas Reiniciadas", description: "Puede comenzar un nuevo análisis." });
   };
 
+  // Updated updateVocalMetrics to accept noteIndex
   const updateVocalMetrics = useCallback((currentHz: number, note: string, octave: number, noteIndex: number) => {
     if (currentHz > 0) {
       setMinPitch((prevMin) => {
@@ -148,7 +149,23 @@ export default function VoiceLabPage() {
           maxpos = i;
         }
       }
-      const T0 = maxpos;
+
+      let T0 = maxpos; // Initial integer period
+
+      // Parabolic interpolation for higher precision
+      if (maxpos > d && maxpos < bufferLength - 1) {
+        const s0 = r[maxpos - 1];
+        const s1 = r[maxpos];
+        const s2 = r[maxpos + 1];
+
+        // Denominator for parabolic interpolation
+        const denominator = s0 - 2 * s1 + s2;
+
+        if (denominator !== 0) { // Avoid division by zero
+          T0 = maxpos + (s0 - s2) / (2 * denominator);
+        }
+      }
+
       const freq = audioContextRef.current.sampleRate / T0;
 
       if (freq > 80 && freq < 1000) {
