@@ -11,17 +11,12 @@ const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "
 const whiteKeyMidiOffsetsInOctave = [0, 2, 4, 5, 7, 9, 11]; // C, D, E, F, G, A, B
 const blackKeyMidiOffsetsInOctave = [1, 3, 6, 8, 10]; // C#, D#, F#, G#, A#
 
-const WHITE_KEY_WIDTH_PX = 48; // Corresponds to w-12
-const BLACK_KEY_WIDTH_PX = 28; // Corresponds to w-7
-const BLACK_KEY_HEIGHT_PX = 100; // Corresponds to h-24 (approx)
-const WHITE_KEY_HEIGHT_PX = 160; // Corresponds to h-40 (approx)
+const WHITE_KEY_WIDTH_PX = 32; // Reduced from 48
+const BLACK_KEY_WIDTH_PX = 20; // Reduced from 28
+const BLACK_KEY_HEIGHT_PX = 70; // Reduced from 100
+const WHITE_KEY_HEIGHT_PX = 110; // Reduced from 160
 
 // Relative left positions for black keys within an octave, based on white key widths
-// C# (1): after C (0)
-// D# (3): after D (2)
-// F# (6): after F (5)
-// G# (8): after G (7)
-// A# (10): after A (9)
 const blackKeyRelativeXOffsets: { [key: number]: number } = {
   1: WHITE_KEY_WIDTH_PX - BLACK_KEY_WIDTH_PX / 2, // C#
   3: 2 * WHITE_KEY_WIDTH_PX - BLACK_KEY_WIDTH_PX / 2, // D#
@@ -64,13 +59,13 @@ export const Piano: React.FC<PianoProps> = ({ activeNoteIndex }) => {
         <div
           key={midi}
           className={cn(
-            "absolute top-0 w-12 border-r border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-100",
-            "flex items-end justify-center pb-2 text-xs font-medium text-gray-600 dark:text-gray-600",
+            "absolute top-0 border-r border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-100",
+            "flex items-end justify-center pb-1 text-[0.6rem] font-medium text-gray-600 dark:text-gray-600", // Adjusted font size and padding
             isActive && "bg-blue-400 dark:bg-blue-400 text-blue-900 dark:text-blue-900",
             isFirstWhiteKey && "rounded-l-lg",
-            isLastRenderedWhiteKey && "rounded-r-lg border-r-0" // Apply classes here
+            isLastRenderedWhiteKey && "rounded-r-lg border-r-0"
           )}
-          style={{ left: currentWhiteKeyXOffset + "px", height: WHITE_KEY_HEIGHT_PX + "px", zIndex: 0 }}
+          style={{ width: WHITE_KEY_WIDTH_PX + "px", left: currentWhiteKeyXOffset + "px", height: WHITE_KEY_HEIGHT_PX + "px", zIndex: 0 }}
         >
           {noteName === "C" && `C${octave}`}
         </div>
@@ -101,11 +96,11 @@ export const Piano: React.FC<PianoProps> = ({ activeNoteIndex }) => {
         <div
           key={midi}
           className={cn(
-            "absolute top-0 w-7 h-24 bg-gray-900 dark:bg-gray-900 border border-gray-700 dark:border-gray-600 rounded-sm",
+            "absolute top-0 bg-gray-900 dark:bg-gray-900 border border-gray-700 dark:border-gray-600 rounded-sm",
             isActive && "bg-blue-600 dark:bg-blue-600",
             "z-10" // Ensure black keys are on top
           )}
-          style={{ left: blackKeyLeft + "px", height: BLACK_KEY_HEIGHT_PX + "px" }}
+          style={{ width: BLACK_KEY_WIDTH_PX + "px", height: BLACK_KEY_HEIGHT_PX + "px", left: blackKeyLeft + "px" }}
         />
       );
     }
