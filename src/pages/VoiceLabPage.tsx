@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Loader2, Mic, MicOff, Pause, Play, RotateCcw } from "lucide-react";
+import { AlertCircle, Loader2, Mic, MicOff, Pause, Play, RotateCcw, Save } from "lucide-react"; // Importar el icono Save
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -334,8 +334,7 @@ export default function VoiceLabPage() {
                 <RotateCcw className="h-4 w-4" />
               </Button>
               <Button onClick={handleRecordTime} variant="outline" size="icon">
-                {/* Removed Save icon as it's not saving to a session */}
-                Guardar Tiempo
+                <Save className="h-4 w-4" /> {/* Usar el icono Save */}
               </Button>
             </div>
           </CardContent>
