@@ -66,6 +66,9 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         'neon-red': '#FF073A', // Nuevo color rojo neón
+        'neon-blue': '#00FFFF', // Nuevo color azul neón
+        'neon-green': '#39FF14', // Nuevo color verde neón
+        'neon-purple': '#BF00FF', // Nuevo color púrpura neón
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -89,10 +92,33 @@ export default {
             height: "0",
           },
         },
+        "neon-glow": { // Nueva animación de brillo neón
+          "0%": {
+            "border-color": "theme('colors.neon-red')",
+            "box-shadow": "0 0 15px 5px theme('colors.neon-red')",
+          },
+          "25%": {
+            "border-color": "theme('colors.neon-blue')",
+            "box-shadow": "0 0 15px 5px theme('colors.neon-blue')",
+          },
+          "50%": {
+            "border-color": "theme('colors.neon-green')",
+            "box-shadow": "0 0 15px 5px theme('colors.neon-green')",
+          },
+          "75%": {
+            "border-color": "theme('colors.neon-purple')",
+            "box-shadow": "0 0 15px 5px theme('colors.neon-purple')",
+          },
+          "100%": {
+            "border-color": "theme('colors.neon-red')",
+            "box-shadow": "0 0 15px 5px theme('colors.neon-red')",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "neon-glow": "neon-glow 8s ease-in-out infinite", // Aplicar la animación
       },
     },
   },
