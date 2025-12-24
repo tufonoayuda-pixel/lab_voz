@@ -65,6 +65,7 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        'neon-red': '#FF073A', // Nuevo color rojo neón
       },
       borderRadius: {
         lg: "var(--radius)",

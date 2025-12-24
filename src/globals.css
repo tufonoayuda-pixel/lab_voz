@@ -96,6 +96,6 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground border-4 border-neon-red; /* Añadido borde rojo neón */
   }
 }
