@@ -18,6 +18,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'comic-sans': ['"Comic Sans MS"', 'cursive'], // Añadido Comic Sans MS
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

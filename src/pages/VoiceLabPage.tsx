@@ -276,7 +276,7 @@ export default function VoiceLabPage() {
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8 max-w-4xl mx-auto">
       <header className="text-center">
-        <h1 className="text-3xl font-bold">Laboratorio de Voz</h1>
+        <h1 className="text-3xl font-bold font-comic-sans">Laboratorio de Voz</h1>
         <p className="text-muted-foreground">Herramientas de análisis acústico y vocal en tiempo real.</p>
       </header>
 
