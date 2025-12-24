@@ -37,7 +37,16 @@ export const Piano: React.FC<PianoProps> = ({ activeNoteIndex }) => {
   const whiteKeysToRender = [];
   const blackKeysToRender = [];
   let currentWhiteKeyXOffset = 0; // Tracks the total width of white keys rendered so far
-  let lastWhiteKeyIndex = -1; // To identify the index of the very last white key in whiteKeysToRender array
+
+  // Determine the actual last white key MIDI note that will be rendered
+  let actualLastWhiteKeyMidi: number | null = null;
+  for (let midi = endMidiNote; midi >= startMidiNote; midi--) {
+    const noteMidiOffsetInOctave = midi % 12;
+    if (whiteKeyMidiOffsetsInOctave.includes(noteMidiOffsetInOctave)) {
+      actualLastWhiteKeyMidi = midi;
+      break;
+    }
+  }
 
   // First pass: Render white keys and calculate their positions
   for (let midi = startMidiNote; midi <= endMidiNote; midi++) {
@@ -48,6 +57,9 @@ export const Piano: React.FC<PianoProps> = ({ activeNoteIndex }) => {
     const isActive = activeNoteIndex === midi;
 
     if (isWhiteKey) {
+      const isFirstWhiteKey = midi === startMidiNote;
+      const isLastRenderedWhiteKey = midi === actualLastWhiteKeyMidi;
+
       whiteKeysToRender.push(
         <div
           key={midi}
@@ -55,25 +67,16 @@ export const Piano: React.FC<PianoProps> = ({ activeNoteIndex }) => {
             "absolute top-0 w-12 border-r border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-100",
             "flex items-end justify-center pb-2 text-xs font-medium text-gray-600 dark:text-gray-600",
             isActive && "bg-blue-400 dark:bg-blue-400 text-blue-900 dark:text-blue-900",
-            midi === startMidiNote && "rounded-l-lg"
+            isFirstWhiteKey && "rounded-l-lg",
+            isLastRenderedWhiteKey && "rounded-r-lg border-r-0" // Apply classes here
           )}
           style={{ left: currentWhiteKeyXOffset + "px", height: WHITE_KEY_HEIGHT_PX + "px", zIndex: 0 }}
         >
           {noteName === "C" && `C${octave}`}
         </div>
       );
-      lastWhiteKeyIndex = whiteKeysToRender.length - 1; // Update index of the last white key
       currentWhiteKeyXOffset += WHITE_KEY_WIDTH_PX;
     }
-  }
-
-  // Apply rounded-r-lg and border-r-0 to the actual last white key
-  if (lastWhiteKeyIndex !== -1) {
-    const lastWhiteKeyElement = whiteKeysToRender[lastWhiteKeyIndex];
-    lastWhiteKeyElement.props.className = cn(
-      lastWhiteKeyElement.props.className,
-      "rounded-r-lg border-r-0"
-    );
   }
 
   // Second pass: Render black keys, positioned relative to the white keys
