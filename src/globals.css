@@ -97,5 +97,6 @@
 
   body {
     @apply bg-background text-foreground border-4 border-neon-red; /* Añadido borde rojo neón */
+    box-shadow: 0 0 20px 5px theme('colors.neon-red'); /* Efecto de brillo neón */
   }
 }
