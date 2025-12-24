@@ -4,13 +4,15 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Loader2, Mic, MicOff, Pause, Play, RotateCcw, Save } from "lucide-react"; // Importar el icono Save
+import { AlertCircle, Loader2, Mic, MicOff, Pause, Play, RotateCcw, Save } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { PitchVisualizer } from "@/components/voice-lab/pitch-visualizer";
 import { cn } from "@/lib/utils";
-import { PatientInfoForm } from "@/components/voice-lab/patient-info-form"; // Import the new form
+import { PatientInfoForm } from "@/components/voice-lab/patient-info-form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"; // Import RadioGroup components
+import { Label } from "@/components/ui/label"; // Import Label component
 
 const noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
@@ -33,6 +35,13 @@ const noteFromPitch = (frequency: number): { note: string; octave: number; noteI
 
   return { note: noteStrings[noteIndex], octave, noteIndex: roundedNoteNum, cents };
 };
+
+type MeasurementType = "TMF" | "TME";
+
+interface RecordedTime {
+  time: string;
+  type: MeasurementType;
+}
 
 export default function VoiceLabPage() {
   const { toast } = useToast();
@@ -57,8 +66,9 @@ export default function VoiceLabPage() {
   // Stopwatch state
   const [stopwatchTime, setStopwatchTime] = useState(0);
   const [isStopwatchRunning, setIsStopwatchRunning] = useState(false);
-  const [recordedTimes, setRecordedTimes] = useState<string[]>([]);
+  const [recordedTimes, setRecordedTimes] = useState<RecordedTime[]>([]); // Updated to store objects
   const stopwatchIntervalRef = useRef<NodeJS.Timeout>();
+  const [measurementType, setMeasurementType] = useState<MeasurementType>("TMF"); // New state for measurement type
 
   // Hydration fix
   const [isClient, setIsClient] = useState(false);
@@ -223,8 +233,8 @@ export default function VoiceLabPage() {
 
   const handleRecordTime = () => {
     const time = formatTime(stopwatchTime);
-    setRecordedTimes((prev) => [...prev, time]);
-    toast({ title: "Tiempo Guardado", description: `Se ha registrado el tiempo: ${time}` });
+    setRecordedTimes((prev) => [...prev, { time, type: measurementType }]); // Store time and type
+    toast({ title: "Tiempo Guardado", description: `Se ha registrado el tiempo: ${time} (${measurementType})` });
   };
 
   if (!isClient) {
@@ -319,7 +329,7 @@ export default function VoiceLabPage() {
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p className="font-mono text-4xl">{isClient ? formatTime(stopwatchTime) : "00:00.00"}</p>
-            <div className="flex justify-center gap-2">
+            <div className="flex justify-center gap-2 mb-4">
               <Button onClick={() => setIsStopwatchRunning(!isStopwatchRunning)} variant="outline" size="icon">
                 {isStopwatchRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
@@ -337,13 +347,30 @@ export default function VoiceLabPage() {
                 <Save className="h-4 w-4" />
               </Button>
             </div>
+            <div className="flex justify-center">
+              <RadioGroup
+                defaultValue="TMF"
+                value={measurementType}
+                onValueChange={(value: MeasurementType) => setMeasurementType(value)}
+                className="flex space-x-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="TMF" id="tmf" />
+                  <Label htmlFor="tmf">TMF</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="TME" id="tme" />
+                  <Label htmlFor="tme">TME</Label>
+                </div>
+              </RadioGroup>
+            </div>
           </CardContent>
           {recordedTimes.length > 0 && (
             <CardFooter className="flex flex-col items-start gap-2 pt-4 border-t">
               <h4 className="font-medium text-sm">Tiempos Guardados:</h4>
               <ul className="list-disc list-inside text-sm text-muted-foreground">
-                {recordedTimes.map((time, index) => (
-                  <li key={index}>{time}</li>
+                {recordedTimes.map((item, index) => (
+                  <li key={index}>{item.time} ({item.type})</li> {/* Display time and type */}
                 ))}
               </ul>
               <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => setRecordedTimes([])}>
