@@ -20,47 +20,45 @@ export const PitchHistory: React.FC<PitchHistoryProps> = ({
 
   useEffect(() => {
     if (historyRef.current) {
-      // Scroll to the right to show the latest pitches
-      historyRef.current.scrollLeft = historyRef.current.scrollWidth;
+      // Scroll to the top to show the latest pitches, giving a "falling" effect
+      historyRef.current.scrollTop = 0; // Keep the newest items at the top
     }
   }, [history]);
 
-  // Cents deviation range for horizontal positioning within a column
-  const minCents = -50;
-  const maxCents = 50;
-  const centsRange = maxCents - minCents;
-
-  // Note index range for vertical positioning
+  // Note index range for horizontal positioning
   const noteRange = maxNoteIndex - minNoteIndex;
 
   return (
-    <div className="relative w-full h-48 bg-gray-50 dark:bg-gray-800 rounded-md mt-4 border border-gray-200 dark:border-gray-700 overflow-x-auto overflow-y-hidden">
-      <div ref={historyRef} className="absolute inset-0 flex items-end pb-1">
+    <div className="relative w-full h-48 bg-gray-50 dark:bg-gray-800 rounded-md mt-4 border border-gray-200 dark:border-gray-700 overflow-y-auto overflow-x-hidden">
+      <div ref={historyRef} className="absolute inset-0 flex flex-col-reverse"> {/* flex-col-reverse to stack vertically, new items appear at the top */}
         {history.slice(-maxHistoryItems).map((item, index) => {
-          // Calculate vertical position based on noteIndex (MIDI note)
-          // Invert the Y-axis so higher notes are higher on the display
-          // 0% is bottom, 100% is top
+          // Calculate horizontal position based on noteIndex (MIDI note)
+          // 0% is left, 100% is right
           const notePosition = ((item.noteIndex - minNoteIndex) / noteRange) * 100;
           const clampedNotePosition = Math.max(0, Math.min(100, notePosition));
 
-          // Calculate horizontal position within the column based on cents deviation
-          // 0% is left, 100% is right
-          const centsPosition = ((item.cents - minCents) / centsRange) * 100;
-          const clampedCentsPosition = Math.max(0, Math.min(100, centsPosition));
+          // Determine color based on cents deviation
+          let indicatorColor = "bg-red-500 dark:bg-red-400"; // Default for off-pitch
+          if (item.noteIndex !== -1) {
+            if (Math.abs(item.cents) <= 5) { // Within 5 cents, considered good
+              indicatorColor = "bg-green-500 dark:bg-green-400";
+            } else if (Math.abs(item.cents) <= 12) { // Within 12 cents, slightly off
+              indicatorColor = "bg-yellow-500 dark:bg-yellow-400";
+            }
+          }
 
           return (
             <div
               key={index}
-              className="relative h-full w-4 flex-shrink-0 border-l border-gray-100 dark:border-gray-700" // Each column is 4px wide
+              className="relative w-full h-2 flex-shrink-0" // Each row is 2px high
             >
-              {/* Pitch indicator bar */}
+              {/* Pitch indicator dot */}
               {item.noteIndex !== -1 && ( // Only show if a valid note is detected
                 <div
-                  className="absolute w-1 bg-red-500 dark:bg-red-400"
+                  className={cn("absolute h-2 w-2 rounded-full", indicatorColor)} // Small dot/circle
                   style={{
-                    bottom: `calc(${clampedNotePosition}% - 5px)`, // Position vertically based on note, adjust for bar height
-                    left: `calc(${clampedCentsPosition}% - 2px)`, // Position horizontally based on cents, adjust for bar width
-                    height: '10px', // Fixed height for the bar
+                    left: `calc(${clampedNotePosition}% - 4px)`, // Position horizontally based on note, adjust for dot width
+                    top: '0px', // Align to top of the 2px row
                   }}
                 />
               )}
