@@ -317,7 +317,7 @@ export default function VoiceLabPage() {
         <PitchVisualizer pitch={pitch} pitchHistory={pitchHistory} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Cambiado de lg:grid-cols-2 a md:grid-cols-2 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Métricas Vocales</CardTitle>
@@ -418,6 +418,11 @@ export default function VoiceLabPage() {
           )}
         </Card>
       </div>
+
+      {/* Footer with creator information */}
+      <footer className="text-center text-sm text-muted-foreground mt-8 p-4">
+        <p>Creado por Fonoaudiólogo Cristóbal San Martín y es solo para uso terapéutico</p>
+      </footer>
     </div>
   );
 }
