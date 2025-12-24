@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback } from "react"; // Añadido React aquí
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -50,8 +50,8 @@ export default function VoiceLabPage() {
   const [pitch, setPitch] = useState({ hz: 0, note: "...", octave: 0, noteIndex: -1, cents: 0 });
 
   // Vocal Metrics State
-  const [minPitch, setMinPitch] = useState<{ hz: number; note: string; octave: number } | null>(null);
-  const [maxPitch, setMaxPitch] = useState<{ hz: number; note: string; octave: number } | null>(null);
+  const [minPitch, setMinPitch] = useState<{ hz: number; note: string; octave: number; noteIndex: number } | null>(null);
+  const [maxPitch, setMaxPitch] = useState<{ hz: number; note: string; octave: number; noteIndex: number } | null>(null);
   const [avgPitch, setAvgPitch] = useState<number>(0);
   const allPitchesRef = useRef<number[]>([]);
 
@@ -90,17 +90,17 @@ export default function VoiceLabPage() {
     toast({ title: "Métricas Reiniciadas", description: "Puede comenzar un nuevo análisis." });
   };
 
-  const updateVocalMetrics = useCallback((currentHz: number, note: string, octave: number) => {
+  const updateVocalMetrics = useCallback((currentHz: number, note: string, octave: number, noteIndex: number) => {
     if (currentHz > 0) {
       setMinPitch((prevMin) => {
         if (!prevMin || currentHz < prevMin.hz) {
-          return { hz: currentHz, note, octave };
+          return { hz: currentHz, note, octave, noteIndex };
         }
         return prevMin;
       });
       setMaxPitch((prevMax) => {
         if (!prevMax || currentHz > prevMax.hz) {
-          return { hz: currentHz, note, octave };
+          return { hz: currentHz, note, octave, noteIndex };
         }
         return prevMax;
       });
@@ -155,7 +155,7 @@ export default function VoiceLabPage() {
         // Reasonable human voice range
         const { note, octave, noteIndex, cents } = noteFromPitch(freq);
         setPitch({ hz: freq, note, octave, noteIndex, cents });
-        updateVocalMetrics(freq, note, octave);
+        updateVocalMetrics(freq, note, octave, noteIndex); // Pass noteIndex
         setPitchHistory((prev) => [...prev, { cents, noteIndex }]);
       } else {
         setPitch({ hz: 0, note: "...", octave: 0, noteIndex: -1, cents: 0 });
@@ -237,6 +237,17 @@ export default function VoiceLabPage() {
     toast({ title: "Tiempo Guardado", description: `Se ha registrado el tiempo: ${time} (${measurementType})` });
   };
 
+  // Calculate Extensión Tonal and Tesitura Tonal
+  const extensionTonal =
+    minPitch && maxPitch && minPitch.noteIndex !== -1 && maxPitch.noteIndex !== -1
+      ? maxPitch.noteIndex - minPitch.noteIndex
+      : 0;
+
+  const tesituraTonal =
+    minPitch && maxPitch && minPitch.noteIndex !== -1 && maxPitch.noteIndex !== -1
+      ? `${minPitch.note}${minPitch.octave} - ${maxPitch.note}${maxPitch.octave}`
+      : "-";
+
   if (!isClient) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -296,7 +307,7 @@ export default function VoiceLabPage() {
             <CardDescription>Análisis del rango y tono promedio de la muestra actual.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-3 gap-4 text-center mb-4">
               <div>
                 <p className="text-sm text-muted-foreground">Tono Mínimo</p>
                 <p className="text-2xl font-bold">{minPitch ? `${minPitch.note}${minPitch.octave}` : "-"}</p>
@@ -313,6 +324,16 @@ export default function VoiceLabPage() {
                 <p className="text-xs text-muted-foreground">
                   {avgPitch > 0 ? `${noteFromPitch(avgPitch).note}${noteFromPitch(avgPitch).octave}` : ""}
                 </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-center border-t pt-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Extensión Tonal</p>
+                <p className="text-2xl font-bold">{extensionTonal > 0 ? `${extensionTonal} semitonos` : "-"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Tesitura Tonal</p>
+                <p className="text-2xl font-bold">{tesituraTonal}</p>
               </div>
             </div>
           </CardContent>
