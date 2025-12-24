@@ -315,7 +315,7 @@ export default function VoiceLabPage() {
         <Card>
           <CardHeader>
             <CardTitle>Cronómetro</CardTitle>
-            <CardDescription>Mida tiempos de fonación o espiración.</CardDescription>
+            <CardDescription>Utilice este cronómetro para medir el tiempo máximo de fonación (TMF) o el tiempo máximo de espiración (TME).</CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p className="font-mono text-4xl">{isClient ? formatTime(stopwatchTime) : "00:00.00"}</p>
@@ -334,7 +334,7 @@ export default function VoiceLabPage() {
                 <RotateCcw className="h-4 w-4" />
               </Button>
               <Button onClick={handleRecordTime} variant="outline" size="icon">
-                <Save className="h-4 w-4" /> {/* Usar el icono Save */}
+                <Save className="h-4 w-4" />
               </Button>
             </div>
           </CardContent>
