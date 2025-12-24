@@ -11,8 +11,8 @@ interface PitchVisualizerProps {
 }
 
 export const PitchVisualizer: React.FC<PitchVisualizerProps> = ({ pitch, pitchHistory }) => {
-  const minPianoNoteIndex = 48; // C3
-  const maxPianoNoteIndex = 72; // C5
+  const minPianoNoteIndex = 36; // C2
+  const maxPianoNoteIndex = 84; // C6
 
   return (
     <div className="flex flex-col items-center w-full">
